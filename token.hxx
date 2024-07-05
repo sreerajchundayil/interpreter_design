@@ -1,0 +1,24 @@
+#ifndef TOKEN_HXX
+#define TOKEN_HXX
+
+#include <vector>
+
+enum TokenType
+{
+  //single-character-token
+  LEFT_PAREN, RIGHT_PAREN, LEFT_BRACE, RIGHT_BRACE,
+  COMMA, DOT, MINUS, PLUS, SEMICOLON, SLASH, STAR,
+
+  //
+  BANG, BANG_EQUAL, EQUAL, EQUAL_EQUAL, GREATER, GREATER_EQUAL, LESS, LESS_EQUAL,
+
+  //literal
+  IDENTIFIER, STRING, NUMBER,
+
+  //Keywords
+  AND, CLASS, ELSE, FALSE, FUNC, FOR, IF, NIL, OR, PRINT,
+  RETURN, SUPER, THIS, TRUE, VAR, WHILE, EOFF
+};
+
+
+#endif
