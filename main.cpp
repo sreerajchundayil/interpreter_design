@@ -4,7 +4,7 @@
 #include <list>
 #include <string>
 #include <map>
-#include "lexer.hxx"
+#include "lexer/lexer.hxx"
 
 using namespace std;
 
