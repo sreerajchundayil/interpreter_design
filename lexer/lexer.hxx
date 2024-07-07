@@ -7,7 +7,7 @@
 
 class Token
 {
-  private:
+  public:
     TokenType type;
     std::string lexeme;
     std::string literal;
@@ -27,7 +27,7 @@ class Lexer
 
 class Scanner
 {
-  private:
+  public:
     std::string source;
     std::list<Token> tokens;
 

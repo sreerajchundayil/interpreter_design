@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 
+#include "generateAst.hxx"
+
 using namespace std;
 
 std::string trim(const std::string& text)
@@ -39,121 +41,107 @@ std::vector<std::string> SplitLineWithDelim(std::string text, char delim)
   return myVector;
 }
 
-class AstTemplateGenerator 
+void AstTemplateGenerator::DefineTypes(std::string baseName, std::string className, std::string fieldList)
 {
-  std::ofstream ofs;
-  public:
-    void DefineTypes(std::string baseName, std::string className, std::string fieldList)
-    {
-      auto typeAndVariable = SplitLineWithDelim(fieldList, ',');
-      ofs << "class " + className + " : public " + baseName +
-          "\n{\n"
-          + "  private:\n";
-      for(auto elem : typeAndVariable)
-      {
-        auto splitTypeAndVariable = SplitLineWithDelim(elem, ' ');
-        ofs << "    " << splitTypeAndVariable[0] << "& " << splitTypeAndVariable[1] << ";\n";
-      }
-      ofs << "  public:\n    " + className + "(";
-      for(size_t i = 0; i < typeAndVariable.size(); i++)
-      {
-        auto splitTypeAndVariable = SplitLineWithDelim(typeAndVariable[i], ' ');
-        if( i == typeAndVariable.size() - 1)
-          ofs << splitTypeAndVariable[0] << "& " << splitTypeAndVariable[1];
-        else
-          ofs << splitTypeAndVariable[0] << "& " << splitTypeAndVariable[1] << ", ";
-      }
-      ofs << "):\n      ";
-      for(size_t i = 0; i < typeAndVariable.size(); i++)
-      {
-        const auto& elem = typeAndVariable[i];
-        if(i == typeAndVariable.size()-1)
-          ofs << SplitLineWithDelim(elem, ' ')[1] + "(" + SplitLineWithDelim(elem, ' ')[1] + ")\n";
-        else
-          ofs << SplitLineWithDelim(elem, ' ')[1] + "(" + SplitLineWithDelim(elem, ' ')[1] + "), ";
-      }
-      ofs<< "    {\n";
+  auto typeAndVariable = SplitLineWithDelim(fieldList, ',');
+  ofs << "class " + className + " : public " + baseName +
+      "\n{\n"
+      + "  public:\n";
+  for(auto elem : typeAndVariable)
+  {
+    auto splitTypeAndVariable = SplitLineWithDelim(elem, ' ');
+    ofs << "    " << splitTypeAndVariable[0] << "* " << splitTypeAndVariable[1] << ";\n";
+  }
+  ofs << "  public:\n    " + className + "(";
+  for(size_t i = 0; i < typeAndVariable.size(); i++)
+  {
+    auto splitTypeAndVariable = SplitLineWithDelim(typeAndVariable[i], ' ');
+    if( i == typeAndVariable.size() - 1)
+      ofs << splitTypeAndVariable[0] << "* " << splitTypeAndVariable[1];
+    else
+      ofs << splitTypeAndVariable[0] << "* " << splitTypeAndVariable[1] << ", ";
+  }
+  ofs << "):\n      ";
+  for(size_t i = 0; i < typeAndVariable.size(); i++)
+  {
+    const auto& elem = typeAndVariable[i];
+    if(i == typeAndVariable.size()-1)
+      ofs << SplitLineWithDelim(elem, ' ')[1] + "(" + SplitLineWithDelim(elem, ' ')[1] + ")\n";
+    else
+      ofs << SplitLineWithDelim(elem, ' ')[1] + "(" + SplitLineWithDelim(elem, ' ')[1] + "), ";
+  }
+  ofs<< "    {\n";
 
-      ofs << "    }\n";
+  ofs << "    }\n";
 
-      ofs <<  "    void Accept(Visitor* visitor)\n";
-      ofs <<  "    {\n";
-      ofs <<  "       visitor->Visit" << className << "(this);\n";
-      ofs <<  "    }\n";
+  ofs <<  "    "<< "std::string" << " Accept(const Visitor* visitor)\n";
+  ofs <<  "    {\n";
+  ofs <<  "       return visitor->Visit" << className << "(this);\n";
+  ofs <<  "    }\n";
 
-      ofs << "};\n\n";
+  ofs << "};\n\n";
+  
+}
 
+void AstTemplateGenerator::GenerateTemplate()
+{
+  ofs.open("astClasses.hxx");  
+  std::list<std::string> types =
+  {
+    "Binary   : Expr left, Token operation, Expr right",
+    "Grouping : Expr expression",
+    "Literal  : std::string value",
+    "Unary    : Token operation, Expr right"
+  };
+  ofs << "#ifndef ASTCLASSES_HXX\n";
+  ofs << "#define ASTCLASSES_HXX\n";
+  ofs << "#include \"../lexer/lexer.hxx\"\n";
+  ofs << "#include <string>\n";
+  std::vector<std::string> classNames;
+  std::vector<std::string> fieldLists;
+  for(const std::string& type : types)
+  {
+    auto pos = type.find(':');
+    classNames.push_back(trim(type.substr(0,pos)));
+    fieldLists.push_back(trim(type.substr(pos+1)));
+  }
 
-      
-    }
-    void GenerateTemplate()
-    {
-      ofs.open("astClasses.cpp");  
-      std::list<std::string> types =
-      {
-        "Binary   : Expr left, Token operation, Expr right",
-        "Grouping : Expr expression",
-        "Literal  : std::string value",
-        "Unary    : Token operation, Expr right"
-      };
+  //std::ofstream ofs("astClasses.hxx");
+ 
+  //Declaring concrete classes 
+  for(const auto& className : classNames)
+    ofs << "class " + className + ";\n"; 
+  ofs << "\n";
+  ofs << "class Visitor{\n"
+      << "  public:\n";
+  for(const auto& className : classNames)
+  {
+    ofs << "    virtual std::string Visit" << className 
+      << "(const " << className << " *element) const = 0;\n";
+  }
 
-      ofs << "#include \"lexer.hxx\"\n";
-      ofs << "#include <string>\n";
-      std::vector<std::string> classNames;
-      std::vector<std::string> fieldLists;
-      for(const std::string& type : types)
-      {
-        auto pos = type.find(':');
-        classNames.push_back(trim(type.substr(0,pos)));
-        fieldLists.push_back(trim(type.substr(pos+1)));
-      }
-     
-      //Declaring concrete classes 
-      for(const auto& className : classNames)
-        ofs << "class " + className + ";\n"; 
-      ofs << "\n";
-      ofs << "class Visitor{\n"
-          << "  public:\n";
-      for(const auto& className : classNames)
-      {
-        ofs << "    virtual void Visit" << className 
-          << "(const " << className << " *element) const = 0;\n";
-      }
+  ofs << "};\n\n";
 
-      ofs << "};\n\n";
+  std::string baseName = "Expr";
 
-      ofs << "class ConcreteVisit1" << ": public Visitor\n";
-      ofs << "{\n";
-      ofs << "  public:\n";
+  ofs << "class " + baseName + "\n{\n"; 
+  ofs << "  public:\n";
+  ofs << "    virtual ~" << baseName << "(){}\n";
+  ofs << "    virtual std::string Accept(Visitor *visitor) const = 0;\n";
+  ofs << "};\n\n";
 
-      for(const auto& className: classNames)
-      {
-        ofs << "    void Visit" << className << "(const " << className << " *elem)\n";
-        ofs << "    {\n";
-        ofs << "    }\n";
-      }
-      ofs << "};\n";
+  //Create Sub Classes ofAST
+  for(const std::string& type : types)
+  {
+    auto pos = type.find(':');
+    auto className = trim(type.substr(0,pos));
+    auto fieldList = trim(type.substr(pos+1));
+    DefineTypes(baseName, className, fieldList);
+  }
 
+  ofs << "\n#endif\n";
 
-      std::string baseName = "Expr";
-
-      ofs << "class " + baseName + "\n{\n"; 
-      ofs << "  public:\n";
-      ofs << "    virtual ~" << baseName << "(){}\n";
-      ofs << "    virtual void Accept(Visitor *visitor) const = 0;\n";
-      ofs << "};\n\n";
-
-      //Create Sub Classes ofAST
-      for(const std::string& type : types)
-      {
-        auto pos = type.find(':');
-        auto className = trim(type.substr(0,pos));
-        auto fieldList = trim(type.substr(pos+1));
-        DefineTypes(baseName, className, fieldList);
-      }
-
-    }
-};
+}
 
 int main(int argc, char* argv[])
 {

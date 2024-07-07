@@ -1,8 +1,10 @@
-a.out:	lexer/lexer.cpp main.cpp lexer/lexer.hxx lexer/token.hxx
-	g++ -g lexer/lexer.cpp main.cpp
+all: lex par
+lex:	lexer/lexer.cpp main.cpp lexer/lexer.hxx lexer/token.hxx
+	g++ -g lexer/lexer.cpp main.cpp -o lex
 
-ast:	parser/generateAst.cpp
-	g++ -g parser/generateAst.cpp
+par:	parser/generateAst.cpp
+	g++ -g parser/generateAst.cpp -o par
+
 
 clean : 
-	rm a.out
+	rm a.out lexer parser
