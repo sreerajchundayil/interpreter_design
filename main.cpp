@@ -5,6 +5,8 @@
 #include <string>
 #include <map>
 #include "lexer/lexer.hxx"
+#include "parser/parser.hxx"
+#include "parser/astClasses.hxx"
 
 using namespace std;
 
@@ -14,7 +16,14 @@ void runLine(const std::string& str)
 {
   //std::cout << str;
   Lexer lex(str);
-  lex.Tokenize();
+  auto tokens = lex.Tokenize();
+  Parser p(tokens);
+  auto* expr = p.parse();
+  Interpreter inter;
+  Expr* finalExpr = inter.interpret(expr);
+  Literal* lt = (Literal*)finalExpr;
+  std::cout << "The output is : " << lt->value << std::endl;
+  int a = 10;
 }
 
 void run(char* file)

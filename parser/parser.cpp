@@ -84,15 +84,17 @@ Expr* Parser::unary()
 Expr* Parser::primary()
 {
   if (match(FALSE))
-    return new Literal(false);
+    return new Literal("1",TokenType::NUMBER);
   if (match(TRUE))
-    return new Literal(true);
-  if (match(NIL))
-    return new Literal(NIL);
+    return new Literal("0",TokenType::NUMBER);
 
-  if (match(NUMBER, STRING))
+  if (match(NUMBER))
   {
-    return new Literal(previous().literal);
+    return new Literal(previous().literal, TokenType::NUMBER);
+  }
+  if (match(STRING))
+  {
+    return new Literal(previous().literal, TokenType::STRING);
   }
 
   if (match(LEFT_PAREN))
@@ -164,5 +166,12 @@ Expr* Parser::equality()
   }
   return expr;
 }
+
+Expr* Parser::parse()
+{
+  return expression();
+}
+
+
 
 

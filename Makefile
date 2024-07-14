@@ -1,9 +1,14 @@
-all: lex par
-lex:	lexer/lexer.cpp main.cpp lexer/lexer.hxx lexer/token.hxx
-	g++ -g lexer/lexer.cpp main.cpp -o lex
+all: lex parse
+main: lex parse main.cpp
+	g++ lex.o parse.o main.cpp -g
 
-par:	parser/generateAst.cpp
-	g++ -g parser/generateAst.cpp -o par
+lex:	lexer/lexer.cpp lexer/lexer.hxx lexer/token.hxx 
+	g++ lexer/lexer.cpp -c -o lex.o -g
+
+parse: parser/astClasses.hxx parser/parser.cpp parser/parser.hxx
+	g++ parser/parser.cpp -c -o parse.o -g
+
+
 
 
 clean : 

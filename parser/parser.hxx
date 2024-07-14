@@ -2,6 +2,7 @@
 #define PARSER_HXX
 #include "astClasses.hxx"
 #include <string>
+#include <vector>
 
 class Parser
 {
@@ -12,6 +13,7 @@ class Parser
     Parser(std::vector<Token> tokens);
     Expr* expression();
     Expr* equality();
+    Expr* parse();
     Token peek();
     Token previous();
     bool IsAtEnd();
