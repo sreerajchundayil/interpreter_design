@@ -81,10 +81,10 @@ Lexer::Lexer(const std::string& str):mCommand(str)
 {
 }
 
-std::list<Token> Lexer::Tokenize()
+std::vector<Token> Lexer::Tokenize()
 {
   Scanner scanner(mCommand);
-  auto tokens = scanner.ScanTokens();
+  std::vector<Token> tokens = scanner.ScanTokens();
   scanner.PrintTokens();
   return tokens;
 }
@@ -260,7 +260,7 @@ void Scanner::addToken(TokenType type, std::string literal)
 }
 
 
-std::list<Token> Scanner::ScanTokens()
+std::vector<Token> Scanner::ScanTokens()
 {
   while(!IsAtEnd())
   {

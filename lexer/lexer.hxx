@@ -2,7 +2,7 @@
 #define LEXER_HXX
 
 #include <string>
-#include <list>
+#include <vector>
 #include "token.hxx"
 
 class Token
@@ -22,14 +22,14 @@ class Lexer
     const std::string& mCommand;
   public:
     Lexer(const std::string& str);
-    std::list<Token> Tokenize();
+    std::vector<Token> Tokenize();
 };
 
 class Scanner
 {
   public:
     std::string source;
-    std::list<Token> tokens;
+    std::vector<Token> tokens;
 
     int start = 0; //First character of a lexeme getting processed.
     int current = 0; //Current character being processed.
@@ -50,7 +50,7 @@ class Scanner
     void ScanToken();
     void addToken(TokenType type);
     void addToken(TokenType type, std::string literal);
-    std::list<Token> ScanTokens();
+    std::vector<Token> ScanTokens();
     void PrintTokens();
 };
 
