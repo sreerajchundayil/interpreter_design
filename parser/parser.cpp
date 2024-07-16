@@ -26,7 +26,7 @@ Token Parser::previous()
 
 bool Parser::IsAtEnd()
 {
-  return peek().type == EOF;
+  return peek().type == EOFF;
 }
 
 bool Parser::check(TokenType type)
@@ -167,9 +167,33 @@ Expr* Parser::equality()
   return expr;
 }
 
-Expr* Parser::parse()
+std::vector<Statement*> Parser::parse()
 {
-  return expression();
+  std::vector<Statement*> statements;
+  while(!IsAtEnd())
+    statements.push_back(statement());
+  return statements;
+}
+
+Statement* Parser::statement()
+{
+  if(match(PRINT))
+    return printStatement();
+  return expressionStatement();
+}
+
+Statement* Parser::printStatement()
+{
+  Expr* value = expression();
+  consume(SEMICOLON, "Expect';' after value.");
+  return new Print(value);
+}
+
+Statement* Parser::expressionStatement()
+{
+  Expr* value = expression();
+  consume(SEMICOLON, "Expect';' after expression.");
+  return new Expression(value);
 }
 
 

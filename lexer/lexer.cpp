@@ -152,13 +152,15 @@ void Scanner::CreateNumber()
 {
   while(isdigit(peek()))
     advance();
-  if(!isspace(peek()))
+
+  if(peek() != ';' && !isspace(peek()))
   {
       std::cout << "Invalid number : error at " << line << " at column " << column << std::endl;
       exit(-1);
   }
-  
   std::string substring1 = source.substr(start, current-start);
+  while(peek() == ';')
+    advance();
   addToken(NUMBER, substring1);
 }
 

@@ -13,7 +13,10 @@ class Parser
     Parser(std::vector<Token> tokens);
     Expr* expression();
     Expr* equality();
-    Expr* parse();
+    std::vector<Statement*> parse();
+    Statement* statement();
+    Statement* expressionStatement();
+    Statement* printStatement();
     Token peek();
     Token previous();
     bool IsAtEnd();

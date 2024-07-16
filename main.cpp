@@ -18,12 +18,9 @@ void runLine(const std::string& str)
   Lexer lex(str);
   auto tokens = lex.Tokenize();
   Parser p(tokens);
-  auto* expr = p.parse();
+  std::vector<Statement*> statements = p.parse();
   Interpreter inter;
-  Expr* finalExpr = inter.interpret(expr);
-  Literal* lt = (Literal*)finalExpr;
-  std::cout << "The output is : " << lt->value << std::endl;
-  int a = 10;
+  inter.interpret(statements);
 }
 
 void run(char* file)

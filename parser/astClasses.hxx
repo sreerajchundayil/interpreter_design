@@ -11,7 +11,11 @@ class Grouping;
 class Literal;
 class Unary;
 
+class Expression;
+class Print;
+
 class Visitor;
+class ExpressionVisitor;
 
 
 class Expr
@@ -21,6 +25,14 @@ class Expr
     virtual Expr* Accept(Visitor *visitor) const = 0;
 };
 
+class ExpressionVisitor 
+{
+  public:
+    virtual void VisitExpression(const Expression* element) = 0;
+    virtual void VisitPrint(const Print* element) = 0;
+};
+
+
 class Visitor
 {
   public:
@@ -29,6 +41,44 @@ class Visitor
     virtual Expr* VisitLiteral(const Literal *element) = 0;
     virtual Expr* VisitUnary(const Unary *element) = 0;
 };
+
+class Statement
+{
+  public:
+    virtual ~Statement(){}
+    virtual void Accept(ExpressionVisitor* visitor) const = 0;
+};
+
+class Expression : public Statement
+{
+  public:
+    Expr* expression;
+    Expression(Expr* expression):expression(expression)
+    {
+    }
+
+    void Accept(ExpressionVisitor* visitor)const override
+    {
+      visitor->VisitExpression(this);
+    }
+
+};
+
+class Print : public Statement
+{
+  public:
+    Expr* expression;
+  public:
+    Print(Expr* expression): expression(expression)
+    {
+    }
+    virtual void Accept(ExpressionVisitor* visitor)const override
+    {
+       visitor->VisitPrint(this);
+    }
+};
+
+
 
 class Binary : public Expr
 {
@@ -95,13 +145,20 @@ class Unary : public Expr
     }
 };
 
-class Interpreter: public Visitor
+class Interpreter: public Visitor, public ExpressionVisitor
 {
   public:
-    Expr* interpret(Expr* expression)
+    void interpret(std::vector<Statement*> statements)
     {
-      return evaluate(expression);
+      for(auto& statement: statements)
+        execute(statement);
     }
+
+    void execute(Statement* statement)
+    {
+      statement->Accept(this);
+    }
+
     Expr* VisitLiteral(const Literal* expr) override
     {
       return new Literal{expr->value, expr->type};
@@ -178,6 +235,19 @@ class Interpreter: public Visitor
             return new Literal(std::to_string(std::stoi(left->value) + std::stoi(right->value)), TokenType::NUMBER);
           }
         }
+        case GREATER:
+            return new Literal(std::to_string(std::stoi(left->value) > std::stoi(right->value)), TokenType::NUMBER);
+        case GREATER_EQUAL:
+            return new Literal(std::to_string(std::stoi(left->value) >= std::stoi(right->value)), TokenType::NUMBER);
+        case LESS:
+            return new Literal(std::to_string(std::stoi(left->value) < std::stoi(right->value)), TokenType::NUMBER);
+        case LESS_EQUAL:
+            return new Literal(std::to_string(std::stoi(left->value) <= std::stoi(right->value)), TokenType::NUMBER);
+        case BANG_EQUAL: 
+            return new Literal(std::to_string(std::stoi(left->value) != std::stoi(right->value)), TokenType::NUMBER);
+        case EQUAL_EQUAL: 
+            return new Literal(std::to_string(std::stoi(left->value) == std::stoi(right->value)), TokenType::NUMBER);
+          
       }
 
       std::cout << "Unexpected error while binary operation." << std::endl;
@@ -185,6 +255,18 @@ class Interpreter: public Visitor
       return new Literal("", TokenType::EOFF);
       
     }
+
+    void VisitExpression(const Expression* stmt)
+    {
+      evaluate(stmt->expression);
+    }
+    
+    void VisitPrint(const Print* stmt)
+    {
+      evaluate(stmt->expression);
+    }
+
+
 };
 
 
